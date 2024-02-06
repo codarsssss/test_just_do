@@ -11,8 +11,8 @@ class Notification(models.Model):
         WARNING = 'WARNING', 'Предупреждающее'
         ERROR = 'ERROR', 'Сообщение об ошибке'
 
-    status = models.CharField(max_length=7, choices=Status.choices)
-    title = models.CharField(max_length=100) # надо подумать, нужен ли вообще title
+    status = models.CharField(max_length=7, choices=Status)
+    title = models.CharField(max_length=100) #  надо подумать, нужен ли вообще title
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(to=User, on_delete=models.CASCADE,

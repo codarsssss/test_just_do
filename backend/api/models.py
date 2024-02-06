@@ -12,10 +12,11 @@ class Notification(models.Model):
         ERROR = 'ERROR', 'Сообщение об ошибке'
 
     status = models.CharField(max_length=7, choices=Status.choices)
-    author = models.ForeignKey(to=User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100) # надо подумать, нужен ли вообще title
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    author = models.ForeignKey(to=User, on_delete=models.CASCADE,
+                               related_name='notifications')
 
     class Meta:
         ordering = ['-created_at']

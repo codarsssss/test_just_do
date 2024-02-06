@@ -14,7 +14,7 @@
 1) [Django](https://docs.djangoproject.com/en/5.0/)
 2) [Django rest framework](https://www.django-rest-framework.org/)
 3) [channels-redis](https://pypi.org/project/channels-redis/)
-4) [Redis(https://redis.io/docs/manual/)]
+4) [Redis](https://redis.io/docs/manual/)
 5) [Daphne](https://daphne-eu.github.io/daphne/)
 6) Обязательно [poetry](https://python-poetry.org/docs/)
 ### FRONTEND ЧАСТЬ

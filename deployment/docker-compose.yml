@@ -11,10 +11,14 @@ services:
   db:
     image: postgres:13.0-alpine
     restart: always
+    environment:
+      POSTGRES_DB: notification
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ../backend/.env
+      - .env
 
   backend:
     build: ../backend/
@@ -26,23 +30,23 @@ services:
     depends_on:
       - db
     env_file:
-      - ../backend/.env
+      - .env
 
-#  frontend:
-#    build: ../frontend/
-#    volumes:
-#      - ../frontend/:/app/result_build/
+  frontend:
+    build: ../frontend/
+    volumes:
+      - ../frontend/:/app/result_build/
 
   nginx:
-    build: ../infra/
+    image: nginx:1.25
     ports:
       - 8000:80
     volumes:
       - ../frontend/build:/usr/share/nginx/html/
       - static_value:/var/html/static/
       - media_value:/var/html/media/
-      - redoc:/app/api/docs/
-      - redoc:/usr/share/nginx/html/redoc/
+#      - redoc:/app/api/docs/
+#      - redoc:/usr/share/nginx/html/redoc/
     depends_on:
       - backend
     restart: always

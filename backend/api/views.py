@@ -1,24 +1,33 @@
 # views.py
-
+from rest_framework import status
+from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from .models import Notification
+from .models import Notification, User
 from .serializers import NotificationSerializer
 
 
-class NotificationListView(APIView):
-    permission_classes = [IsAdminUser | IsAuthenticated]
+class NotificationViewSet(ModelViewSet):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user = request.user
-        if user.is_staff:  # Для администраторов
-            notifications = Notification.objects.all()
-        else:  # Для обычных пользователей
-            notifications = Notification.objects.filter(author=user)
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return Notification.objects.all()
+        else:
+            return user.notifications.all()
 
-        serializer = NotificationSerializer(notifications, many=True)
-        return Response(serializer.data)
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        data['author'] = request.user.pk
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class NotificationStatisticsView(APIView):

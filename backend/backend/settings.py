@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-62=bpj9v+1_*wv-stemav47z**@vh+64rp$_mrei$8uz4^a#il'
+SECRET_KEY = 'django-insecure-62=bpj9v+1_*wv-stemav47z**@vh+64rp$_mreiuz4^a#il'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -96,9 +96,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -126,6 +126,18 @@ REST_FRAMEWORK = {
     ],
 }
 
+
+DJOSER = {
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.IsAdminUser'],
+        'user': ['rest_framework.permissions.IsAuthenticated']
+    },
+    'HIDE_USERS': False,
+    'USER_ID_FIELD': 'username',
+}
+
+
 SIMPLE_JWT = {
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_COOKIE': 'jwt',
+    'AUTH_COOKIE_HTTPONLY': True,
 }

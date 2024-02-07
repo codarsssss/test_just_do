@@ -1,0 +1,48 @@
+version: '3.3'
+
+volumes:
+  static_value:
+  media_value:
+  postgres_data:
+  redoc:
+
+services:
+
+  db:
+    image: postgres:13.0-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ../backend/.env
+
+  backend:
+    build: ../backend/
+    restart: always
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+      - redoc:/app/api/docs/
+    depends_on:
+      - db
+    env_file:
+      - ../backend/.env
+
+#  frontend:
+#    build: ../frontend/
+#    volumes:
+#      - ../frontend/:/app/result_build/
+
+  nginx:
+    build: ../infra/
+    ports:
+      - 8000:80
+    volumes:
+      - ../frontend/build:/usr/share/nginx/html/
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
+      - redoc:/app/api/docs/
+      - redoc:/usr/share/nginx/html/redoc/
+    depends_on:
+      - backend
+    restart: always

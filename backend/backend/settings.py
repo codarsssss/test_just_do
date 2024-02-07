@@ -25,9 +25,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'rest_framework',
     'djoser',
     'rest_framework_simplejwt',
+    'channels',
+    'channels_redis',
     'api',
     'users'
 ]
@@ -141,3 +144,13 @@ SIMPLE_JWT = {
     'AUTH_COOKIE': 'jwt',
     'AUTH_COOKIE_HTTPONLY': True,
 }
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('localhost', 6379)],
+        },
+    },
+}
+

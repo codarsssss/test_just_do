@@ -1,11 +1,9 @@
-# views.py
 from rest_framework import status
-from rest_framework.generics import get_object_or_404
-from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from .models import Notification, User
+from rest_framework.permissions import IsAuthenticated
+from .models import Notification
 from .serializers import NotificationSerializer
 
 
@@ -29,24 +27,17 @@ class NotificationViewSet(ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-class NotificationStatisticsView(APIView):
-    permission_classes = [IsAdminUser | IsAuthenticated]
-
-    def get(self, request):
+    @action(methods=['get'], detail=False, permission_classes=[IsAuthenticated])
+    def statistics(self, request, *args, **kwargs):
         user = request.user
-        if user.is_staff:  # Для администраторов
-            # Реализация статистики по всем уведомлениям
+        if user.is_staff:
             statistics = {
                 'total_notifications': Notification.objects.count(),
-                # Другие статистические данные
             }
-        else:  # Для обычных пользователей
-            # Реализация статистики по уведомлениям пользователя
+        else:
             user_notifications = Notification.objects.filter(author=user)
             statistics = {
                 'total_notifications': user_notifications.count(),
-                # Другие статистические данные
             }
 
         return Response(statistics)

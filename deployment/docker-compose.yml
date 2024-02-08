@@ -5,6 +5,7 @@ volumes:
   media_value:
   postgres_data:
   redoc:
+  redis_data:
 
 services:
 
@@ -29,6 +30,7 @@ services:
       - redoc:/app/api/docs/
     depends_on:
       - db
+      - redis
     env_file:
       - .env
 
@@ -50,3 +52,9 @@ services:
     depends_on:
       - backend
     restart: always
+
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - redis_data:/data

@@ -3,5 +3,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip
 RUN pip install -r requirements.txt --no-cache-dir
+RUN pip install gunicorn
 COPY . .
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "backend.asgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "backend.asgi:application"]

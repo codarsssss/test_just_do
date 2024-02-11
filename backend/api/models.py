@@ -1,23 +1,21 @@
-from django.contrib.auth import get_user_model
 from django.db import models
+from django.contrib.auth import get_user_model
 
 
 User = get_user_model()
 
 
 class Notification(models.Model):
-    class Status(models.TextChoices):
-        INFO = 'INFO', 'Информационное'
-        WARNING = 'WARNING', 'Предупреждающее'
-        ERROR = 'ERROR', 'Сообщение об ошибке'
+    TYPE_CHOICES = [
+        ('info', 'Информационное'),
+        ('warning', 'Предупреждающее'),
+        ('error', 'Сообщение об ошибке'),
+    ]
 
-    status = models.CharField(max_length=7, choices=Status)
-    title = models.CharField(max_length=100) #  надо подумать, нужен ли вообще title
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(to=User, on_delete=models.CASCADE,
-                               related_name='notifications')
-
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Уведомление'

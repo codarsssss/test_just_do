@@ -1,17 +1,24 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import UserViewSet
+from django.urls import path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView
+)
 
-
-app_name = 'users'
-
-
-router = DefaultRouter()
-router.register('users', UserViewSet)
-
+from .views import LogoutView
 
 urlpatterns = [
-    # path('', include(router.urls)),
-    path('', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
+    # Эндпойнт для получения пары токенов (access и refresh)
+    path('api/token/', TokenObtainPairView.as_view(),
+         name='token_obtain_pair'),
+
+    # Эндпойнт для обновления access токена с использованием refresh токена
+    path('api/token/refresh/', TokenRefreshView.as_view(),
+         name='token_refresh'),
+
+    # Эндпойнт для верификации access токена
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+
+    # Эндпойнт для логаута, который может удалять токен из Redis
+    path('api/logout/', LogoutView.as_view(), name='logout'),
 ]

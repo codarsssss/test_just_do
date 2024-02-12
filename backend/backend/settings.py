@@ -21,6 +21,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -163,8 +164,7 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.IsAdminUser'],
         'user': ['rest_framework.permissions.IsAuthenticated']
     },
-    'HIDE_USERS': False,
-    'USER_ID_FIELD': 'username',
+    'LOGIN_FIELD': 'email',
 }
 
 
@@ -175,7 +175,7 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
     'AUTH_COOKIE': 'jwt',
-    'AUTH_COOKIE_HTTPONLY': True,
+    # 'AUTH_COOKIE_HTTPONLY': True,
 }
 
 CHANNEL_LAYERS = {

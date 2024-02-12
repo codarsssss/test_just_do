@@ -24,11 +24,10 @@ services:
 
   frontend:
     build: ../frontend
-#      dockerfile: ../frontend
     ports:
       - "3000:3000"
-#    volumes:
-#      - ../frontend/:/app/result_build/
+    volumes:
+      - ../frontend/:/app
 
   nginx:
     image: nginx:1.21.3-alpine

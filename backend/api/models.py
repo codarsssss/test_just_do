@@ -16,6 +16,7 @@ class Notification(models.Model):
     message = models.TextField()
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Уведомление'

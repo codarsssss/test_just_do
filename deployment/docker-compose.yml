@@ -41,8 +41,15 @@ services:
       - backend
     restart: always
 
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - redis_data:/data
+
 volumes:
   static_value:
   media_value:
   postgres_data:
   redoc:
+  redis_data:

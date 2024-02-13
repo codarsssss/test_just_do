@@ -1,7 +1,5 @@
-from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
-from django.contrib.auth.models import User
 import json
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -14,18 +12,20 @@ class NotificationConsumer(AsyncWebsocketConsumer):
          сообщений всем пользователям
          '''
         self.user = self.scope["user"]
-        if self.user.is_authenticated:
-            # Принимаем WebSocket соединение
-            await self.accept()
-            # Если пользователь аутентифицирован, добавляем его в общею группу
-            await self.channel_layer.group_add(
-                f"user_{self.user.id}",
-                self.channel_name
-            )
-            # Добавляем суперпользователей в отдельную группу для рассылки всем
-            if self.user.is_superuser:
-                await self.channel_layer.group_add("superusers",
-                                                   self.channel_name)
+        if not self.user.is_authenticated:
+            return await self.close()
+
+        # Принимаем WebSocket соединение
+        await self.accept()
+        # Если пользователь аутентифицирован, добавляем его в общею группу
+        await self.channel_layer.group_add(
+            f"user_{self.user.id}",
+            self.channel_name
+        )
+        # Добавляем суперпользователей в отдельную группу для рассылки всем
+        if self.user.is_superuser:
+            await self.channel_layer.group_add("superusers",
+                                               self.channel_name)
 
     async def disconnect(self, close_code):
         # При отключении удаляем пользователя из его группы уведомлений
@@ -49,26 +49,27 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
         recipient_id = text_data_json.get('recipient_id')
-        if self.user.is_superuser:
-            # Если суперпользователь, обрабатываем команду на отправку
-            if recipient_id:
-                # Отправка сообщения конкретному пользователю
-                await self.channel_layer.group_send(
-                    f"user_{recipient_id}",
-                    {
-                        "type": "send_notification",
-                        "message": message,
-                    }
-                )
-            else:
-                # Отправка сообщения всем пользователям
-                await self.channel_layer.group_send(
-                    "superusers",
-                    {
-                        "type": "send_notification",
-                        "message": message,
-                    }
-                )
+        if not self.user.is_superuser:
+            return
+
+        if recipient_id:
+            # Отправка сообщения конкретному пользователю
+            await self.channel_layer.group_send(
+                f"user_{recipient_id}",
+                {
+                    "type": "send_notification",
+                    "message": message,
+                }
+            )
+        else:
+            # Отправка сообщения всем пользователям
+            await self.channel_layer.group_send(
+                "superusers",
+                {
+                    "type": "send_notification",
+                    "message": message,
+                }
+            )
 
     # Обработчик отправки уведомления
     async def send_notification(self, event):

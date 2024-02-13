@@ -8,11 +8,12 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 application = get_asgi_application()
 
+from api.middleware import JWTAuthMiddleware
 import api.routing
 
 application = ProtocolTypeRouter({
     'http': application,
     'websocket': AllowedHostsOriginValidator(
-        AuthMiddlewareStack(URLRouter(api.routing.websocket_urlpatterns))
+        AuthMiddlewareStack(JWTAuthMiddleware(URLRouter(api.routing.websocket_urlpatterns)))
     ),
 })

@@ -8,7 +8,6 @@ router = DefaultRouter()
 router.register(r'notifications', NotificationViewSet,
                 basename='notifications')
 
-
 urlpatterns = [
     path('', include(router.urls)),
 ]

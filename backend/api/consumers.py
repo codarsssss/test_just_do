@@ -17,7 +17,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
         # Принимаем WebSocket соединение
         await self.accept()
-        # Если пользователь аутентифицирован, добавляем его в общею группу
+        # Если пользователь аутентифицирован, добавляем его в общую группу
         await self.channel_layer.group_add(
             f"user_{self.user.id}",
             self.channel_name

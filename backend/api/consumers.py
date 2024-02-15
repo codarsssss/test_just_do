@@ -32,9 +32,8 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             f"user_{self.user.id}",
             self.channel_name
         )
-        # Удаляем суперпользователя из группы рассылки
-        if self.user.is_superuser:
-            await self.channel_layer.group_discard("users", self.channel_name)
+        await self.channel_layer.group_discard('users', self.channel_name)
+
 
     async def receive(self, text_data):
         '''

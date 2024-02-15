@@ -1,4 +1,8 @@
+from django.db.models import Q, Count
 from rest_framework import permissions, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+
 from .models import Notification
 from .serializers import NotificationSerializer
 
@@ -8,4 +12,12 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Notification.objects.filter(recipient=self.request.user).order_by('-created_at')
+        notifications = Notification.objects.filter(
+            Q(recipient=self.request.user) | Q(recipient=None)
+        )
+        return notifications
+
+    def get_serializer_context(self):
+        notification_statistics = self.queryset.values('type').annotate(count=Count('type'))
+        return {'notification_statistics': notification_statistics}
+

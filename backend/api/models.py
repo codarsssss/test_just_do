@@ -12,7 +12,8 @@ class Notification(models.Model):
         ('error', 'Сообщение об ошибке'),
     ]
 
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,
+                                  null=True, related_name='notifications')
     message = models.TextField()
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)

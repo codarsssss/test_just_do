@@ -1,5 +1,10 @@
 import json
+
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from rest_framework.generics import get_object_or_404
+
+from .models import Notification, User
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -46,35 +51,31 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         Сообщение рассылается через группу Channels, используя метод group_send
         '''
         # Обработка входящих сообщений от пользователя
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        recipient_id = text_data_json.get('recipient_id')
         if not self.user.is_superuser:
             return
 
-        if recipient_id:
-            # Отправка сообщения конкретному пользователю
-            await self.channel_layer.group_send(
-                f"user_{recipient_id}",
-                {
-                    "type": "send_notification",
-                    "message": message,
-                }
-            )
+        text_data_json = json.loads(text_data)
+        recipient = text_data_json.get("recipient_id")
+        message = text_data_json['message']
+        status = text_data_json['status']
+        notif_obj = await (database_sync_to_async
+                           (Notification.objects.create)
+                           (recipient=recipient, status=status,
+                            message=message))
+
+        if recipient:
+            await self.send_message_to_user(recipient.id, notif_obj)
         else:
-            # Отправка сообщения всем пользователям
-            await self.channel_layer.group_send(
-                "superusers",
-                {
-                    "type": "send_notification",
-                    "message": message,
-                }
-            )
+            await self.channel_layer.group_send(notif_obj)
+
+    async def send_message_to_user(self, user_id, notif_obj):
+        channel_name = f"user_{user_id}"
+        await self.channel_layer.send(channel_name, notif_obj)
 
     # Обработчик отправки уведомления
-    async def send_notification(self, event):
-        message = event['message']
-        # Отправляем сообщение пользователю или группе
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
+    # async def send_notification(self, event):
+    #     message = event['message']
+    #     # Отправляем сообщение пользователю или группе
+    #     await self.send(text_data=json.dumps({
+    #         'message': message
+    #     }))

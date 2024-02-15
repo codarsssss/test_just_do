@@ -20,17 +20,11 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if not self.user.is_authenticated:
             return await self.close()
 
-        # Принимаем WebSocket соединение
         await self.accept()
-        # Если пользователь аутентифицирован, добавляем его в общую группу
-        await self.channel_layer.group_add(
-            f"user_{self.user.id}",
-            self.channel_name
-        )
-        # Добавляем суперпользователей в отдельную группу для рассылки всем
-        if self.user.is_superuser:
-            await self.channel_layer.group_add("superusers",
-                                               self.channel_name)
+
+        await self.channel_layer.group_add(f"user_{self.user.id}",
+                                           self.channel_name)
+        await self.channel_layer.group_add(f"users", self.channel_name)
 
     async def disconnect(self, close_code):
         # При отключении удаляем пользователя из его группы уведомлений
@@ -40,8 +34,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
         # Удаляем суперпользователя из группы рассылки
         if self.user.is_superuser:
-            await self.channel_layer.group_discard("superusers",
-                                                   self.channel_name)
+            await self.channel_layer.group_discard("users", self.channel_name)
 
     async def receive(self, text_data):
         '''
@@ -58,24 +51,21 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         recipient = text_data_json.get("recipient_id")
         message = text_data_json['message']
         status = text_data_json['status']
-        notif_obj = await (database_sync_to_async
-                           (Notification.objects.create)
-                           (recipient=recipient, status=status,
-                            message=message))
+        notif_obj = await (
+            database_sync_to_async(
+                Notification.objects.create
+            )
+            (
+                recipient=recipient,
+                status=status,
+                message=message
+            ))
 
         if recipient:
             await self.send_message_to_user(recipient.id, notif_obj)
         else:
-            await self.channel_layer.group_send(notif_obj)
+            await self.channel_layer.group_send("users", notif_obj)
 
     async def send_message_to_user(self, user_id, notif_obj):
         channel_name = f"user_{user_id}"
         await self.channel_layer.send(channel_name, notif_obj)
-
-    # Обработчик отправки уведомления
-    # async def send_notification(self, event):
-    #     message = event['message']
-    #     # Отправляем сообщение пользователю или группе
-    #     await self.send(text_data=json.dumps({
-    #         'message': message
-    #     }))

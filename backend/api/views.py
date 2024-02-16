@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.db.models import Q, Count
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -17,7 +18,13 @@ class NotificationView(APIView):
         timestamp = request.query_params.get('timestamp')
         notifications = get_filter_timestamp(Notification, timestamp,
                                              user_datetime, user)
+        if notifications:
+            stat = notifications.values('type').annotate(count=Count('type'))
+        else:
+            stat = None
 
         return Response({
             "notifications": notifications,
-            "statistic": notifications.values('type').annotate(count=Count('type'))})
+            "statistic": stat},
+            status=status.HTTP_200_OK
+        )

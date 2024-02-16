@@ -2,9 +2,11 @@
 "use client";
 import axios from "axios";
 import { useState } from "react";
-
+import { useRouter } from 'next/navigation'
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+  const router = useRouter();
+
+  let [isLogin, setIsLogin] = useState(true);
   const [username, setUserName] = useState("");
   const [last_name, setLastName] = useState("");
   const [first_name, setFirstName] = useState("");
@@ -27,6 +29,7 @@ export default function Auth() {
         // Make the request to the Next.js API route proxy
         const response = await axios.post("http://localhost:8000/api/users/", user);
         console.log("Регистрация успешна:", response.data);
+        setIsLogin(true)
         // Handle successful registration
       } else {
         const user = {
@@ -36,6 +39,8 @@ export default function Auth() {
         const response = await axios.post("http://localhost:8000/api/auth/jwt/create/", user)
         // Handle login logic
         console.log("Авторизация успешна:", response.data);
+        document.cookie = `${"jwt=" + response.data.access}`
+        router.push('/dashboard');
       }
     } catch (error) {
       console.error("Ошибка при регистрации:", error.response ? error.response.data : error);

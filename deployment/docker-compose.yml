@@ -24,12 +24,12 @@ services:
     command: ["gunicorn", "backend.wsgi:application", "--bind", "0:8000",
               "--reload"]
 
-  #  frontend:
-#    build: ../frontend
-#    ports:
-#      - "3000:3000"
-#    volumes:
-#      - ../frontend/:/app
+  frontend:
+    build: ../frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend/:/app
 
   nginx:
     image: nginx:1.21.3-alpine

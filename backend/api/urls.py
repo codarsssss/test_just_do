@@ -3,9 +3,6 @@ from rest_framework.routers import DefaultRouter
 
 from .views import NotificationView
 
-
-
-
 urlpatterns = [
     path('', NotificationView.as_view()),
 ]

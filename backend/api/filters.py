@@ -5,7 +5,7 @@ from django.db.models import Q
 from .utils import datetime_to_end_day, datatime_to_start_day
 
 
-def get_filter_timestamp(self, model, timestamp, user_datetime):
+def get_filter_timestamp(model, timestamp, user_datetime, user):
     timestamp_dict = {
         "hour": Q(creqted_at__gte=user_datetime - timedelta(hours=1)),
         "today": Q(creqted_at__gte=datatime_to_start_day(user_datetime)),
@@ -18,6 +18,6 @@ def get_filter_timestamp(self, model, timestamp, user_datetime):
     }
 
     model.objects.filter(timestamp_dict[timestamp]).filter(
-        Q(recipient=self.request.user) | Q(recipient__isnull=True)
+        Q(recipient=user) | Q(recipient__isnull=True)
     )
 

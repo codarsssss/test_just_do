@@ -5,6 +5,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from rest_framework.generics import get_object_or_404
 
 from .models import Notification, User
+from .serializers import NotificationSerializer
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -60,10 +61,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 message=message
             ))
 
+        serializer = NotificationSerializer(notif_obj)
+
+
         if recipient:
-            await self.send_message_to_user(recipient.id, notif_obj)
+            await self.send_message_to_user(recipient.id, serializer.data)
         else:
-            await self.channel_layer.group_send("users", notif_obj)
+            await self.channel_layer.group_send("users", serializer.data)
 
     async def send_message_to_user(self, user_id, notif_obj):
         channel_name = f"user_{user_id}"

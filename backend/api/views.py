@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from .filters import get_filter_timestamp
 from .models import Notification
-# from .serializers import NotificationSerializer
+from .serializers import NotificationSerializer
 
 
 class NotificationView(APIView):
@@ -21,11 +21,23 @@ class NotificationView(APIView):
             notifications = get_filter_timestamp(Notification, timestamp,
                                                  user_datetime, user)
         else:
-            notifications = Notification.objects.all()
+            notifications = Notification.objects.filter(recipient=user)
+
+        serializer = NotificationSerializer(notifications, many=True)
 
         return Response({
-            "notifications": notifications,
-            "statistic": notifications.values('type').annotate(
-                count=Count('type')) if notifications else None},
+            "notifications": serializer.data,
+            "statistic": notifications.values('status').annotate(
+                count=Count('status')) if notifications else None},
             status=status.HTTP_200_OK
         )
+
+    # def post(self, request):
+    #     user = request.user
+    #     if not user.is_superuser:
+    #         return Response('error', status=status.HTTP_403_FORBIDDEN)
+    #
+    #     serializer = NotificationSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)

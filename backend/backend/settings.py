@@ -178,7 +178,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
-    'AUTH_COOKIE': 'jwt-auth',
+    'AUTH_COOKIE': 'jwt',
     'AUTH_COOKIE_HTTPONLY': True,
 }
 

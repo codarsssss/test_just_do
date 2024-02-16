@@ -12,19 +12,20 @@ from .models import Notification
 class NotificationView(APIView):
     def get(self, request):
         user = request.user
-        user_datetime = timezone.localtime(
-            timezone=self.request.query_params.get('timezone')
-        )
         timestamp = request.query_params.get('timestamp')
-        notifications = get_filter_timestamp(Notification, timestamp,
-                                             user_datetime, user)
-        if notifications:
-            stat = notifications.values('type').annotate(count=Count('type'))
+
+        if timestamp:
+            user_datetime = timezone.localtime(
+                timezone=self.request.query_params.get('timezone')
+            )
+            notifications = get_filter_timestamp(Notification, timestamp,
+                                                 user_datetime, user)
         else:
-            stat = None
+            notifications = Notification.objects.all()
 
         return Response({
             "notifications": notifications,
-            "statistic": stat},
+            "statistic": notifications.values('type').annotate(
+                count=Count('type')) if notifications else None},
             status=status.HTTP_200_OK
         )

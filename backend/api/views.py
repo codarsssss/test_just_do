@@ -11,8 +11,9 @@ from .models import Notification
 class NotificationView(APIView):
     def get(self, request):
         user = request.user
-        user_datetime = timezone.localdate(
-            timezone=self.request.query_params.get('timezone'))
+        user_datetime = timezone.localtime(
+            timezone=self.request.query_params.get('timezone')
+        )
         timestamp = request.query_params.get('timestamp')
         notifications = get_filter_timestamp(Notification, timestamp,
                                              user_datetime, user)

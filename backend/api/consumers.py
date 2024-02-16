@@ -1,11 +1,10 @@
 import json
-
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from rest_framework.generics import get_object_or_404
 
 from .models import Notification, User
 from .serializers import NotificationSerializer
+from .middleware import get_user
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -35,7 +34,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
         await self.channel_layer.group_discard('users', self.channel_name)
 
-
     async def receive(self, text_data):
         '''
         Вызывается при получении сообщения от пользователя. Если пользователь
@@ -48,27 +46,34 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             return
 
         text_data_json = json.loads(text_data)
-        recipient = text_data_json.get("recipient_id")
+        recipient_id = text_data_json.get("recipient_id")
+
+        recipient = None
+        if recipient_id is not None:
+            recipient: User = await get_user(recipient_id)
+            if recipient.is_anonymous:
+                return await self.send(json.dumps(
+                    {'status': 'error', 'message': 'Unknown recipient_id'})
+                )
+
         message = text_data_json['message']
         status = text_data_json['status']
         notif_obj = await (
-            database_sync_to_async(
-                Notification.objects.create
-            )
-            (
+            database_sync_to_async(Notification.objects.create)(
                 recipient=recipient,
                 status=status,
                 message=message
-            ))
+            )
+        )
 
         serializer = NotificationSerializer(notif_obj)
+        json_data = serializer.data
+        json_data['type'] = 'send.notification'
 
-
-        if recipient:
-            await self.send_message_to_user(recipient.id, serializer.data)
+        if recipient_id is not None:
+            await self.channel_layer.group_send(f"user_{recipient_id}", json_data)
         else:
-            await self.channel_layer.group_send("users", serializer.data)
+            await self.channel_layer.group_send("users", json_data)
 
-    async def send_message_to_user(self, user_id, notif_obj):
-        channel_name = f"user_{user_id}"
-        await self.channel_layer.send(channel_name, notif_obj)
+    async def send_notification(self, event):
+        await self.send(json.dumps(event))

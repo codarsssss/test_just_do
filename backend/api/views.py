@@ -20,4 +20,4 @@ class NotificationView(APIView):
 
         return Response({
             "notifications": notifications,
-            "statistic": self.queryset.values('type').annotate(count=Count('type'))})
+            "statistic": notifications.values('type').annotate(count=Count('type'))})

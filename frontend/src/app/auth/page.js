@@ -2,7 +2,13 @@
 "use client";
 import axios from "axios";
 import { useState } from "react";
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
+
+
+
+
+
 export default function Auth() {
   const router = useRouter();
 
@@ -12,6 +18,18 @@ export default function Auth() {
   const [first_name, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  function getCookie(name) {
+  let cookies = document.cookie; // Получаем строку всех куки
+  let parts = cookies.split('; '); // Разделяем куки на части
+  for(let i = 0; i < parts.length; i++) {
+    let part = parts[i];
+    let [key, value] = part.split('='); // Разделяем каждую часть на ключ и значение
+    if (key === name) {
+      return value; // Возвращаем значение, если нашли нужный ключ
+    }
+  }
+    return null; // Возвращаем null, если куки с таким ключом нет
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -40,6 +58,10 @@ export default function Auth() {
         // Handle login logic
         console.log("Авторизация успешна:", response.data);
         document.cookie = `${"jwt=" + response.data.access}`
+        const decodedToken = jwtDecode(response.data.access);
+        const isSuperuser = decodedToken.is_superuser;
+        console.log(isSuperuser)
+
         router.push('/dashboard');
       }
     } catch (error) {

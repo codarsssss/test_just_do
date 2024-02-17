@@ -1,35 +1,26 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import useWebSocket from 'react-use-websocket';
 
 export default function Dashboard() {
   const [period, setPeriod] = useState('today');
 
-  useEffect(() => {
-    // Создаем новое WebSocket соединение
-    const socket = new WebSocket('ws://127.0.0.1:8000/ws/notifications/');
+  // Настройка WebSocket соединения
+  const { lastMessage, sendJsonMessage, readyState } = useWebSocket('ws://127.0.0.1:8000/ws/notifications/', {
+    onOpen: () => console.log('Connected to server'),
+    // Параметры reconnect позволяют автоматически переподключаться
+    shouldReconnect: (closeEvent) => true, // Будет пытаться переподключиться при любом закрытии соединения
+    reconnectInterval: 3000, // Переподключение каждые 3000 мс
+    reconnectAttempts: 10, // Максимальное количество попыток переподключения
+  });
 
-    socket.onopen = () => {
-      console.log('Connected to server');
-    };
+  // Функция для отправки сообщений на сервер (при необходимости)
+  const sendMessage = () => {
+    sendJsonMessage({ message: 'Привет сервер!' });
+  };
 
-    socket.onmessage = (event) => {
-      // Обрабатываем сообщения, полученные от сервера
-      console.log('Message from server ', event.data);
-    };
-
-    socket.onclose = () => {
-      console.log('Disconnected from server');
-    };
-
-    socket.onerror = (error) => {
-      console.log('WebSocket error: ', error);
-    };
-
-    // Очистка при размонтировании компонента
-    return () => {
-      socket.close();
-    };
-  }, []); // Пустой массив зависимостей гарантирует, что эффект выполнится один раз после монтирования компонента
+  // Обработка полученных сообщений
+  const message = lastMessage ? lastMessage.data : null;
 
   return (
     <div className="p-8">
@@ -46,6 +37,10 @@ export default function Dashboard() {
         <option value="lastMonth">За последний месяц</option>
       </select>
       <div>Статистика для периода: {period}</div>
+      <div>Последнее сообщение: {message}</div>
+      {/* Пример кнопки для отправки сообщений */}
+      <button onClick={sendMessage} disabled={readyState !== WebSocket.OPEN}>Отправить сообщение</button>
     </div>
   );
 }
+

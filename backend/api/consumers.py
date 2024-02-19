@@ -16,6 +16,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
          группу "superusers", которая может быть использована для рассылки
          сообщений всем пользователям
          '''
+
         self.user = self.scope["user"]
         if not self.user.is_authenticated:
             return await self.close()
@@ -25,6 +26,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(f"user_{self.user.id}",
                                            self.channel_name)
         await self.channel_layer.group_add(f"users", self.channel_name)
+
 
     async def disconnect(self, close_code):
         # При отключении удаляем пользователя из его группы уведомлений
@@ -44,10 +46,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         # Обработка входящих сообщений от пользователя
         if not self.user.is_superuser:
             return
-
         text_data_json = json.loads(text_data)
         recipient_id = text_data_json.get("recipient_id")
-
+        print(text_data_json)
         recipient = None
         if recipient_id is not None:
             recipient: User = await get_user(recipient_id)

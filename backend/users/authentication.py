@@ -4,6 +4,7 @@ from django.conf import settings
 
 class CustomAuthentication(JWTAuthentication):
     def authenticate(self, request):
+        print(request.COOKIES, 22222222222222222222222222)
         raw_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE']) or None
         if raw_token is None:
             return None

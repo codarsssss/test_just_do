@@ -4,14 +4,13 @@ import axios from "axios";
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
-
-
+import { CookiesProvider, useCookies } from 'react-cookie';
 
 
 
 export default function Auth() {
   const router = useRouter();
-
+  const [cookies, setCookie] = useCookies(['jwt'])
   let [isLogin, setIsLogin] = useState(true);
   const [username, setUserName] = useState("");
   const [last_name, setLastName] = useState("");
@@ -30,6 +29,7 @@ export default function Auth() {
   }
     return null; // Возвращаем null, если куки с таким ключом нет
   }
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -57,11 +57,11 @@ export default function Auth() {
         const response = await axios.post("http://localhost:8000/api/auth/jwt/create/", user)
         // Handle login logic
         console.log("Авторизация успешна:", response.data);
-        document.cookie = `${"jwt=" + response.data.access}`
-        const decodedToken = jwtDecode(response.data.access);
-        const isSuperuser = decodedToken.is_superuser;
-        console.log(isSuperuser)
 
+        setCookie('jwt', response.data.access, { path: '/', httpOnly: true})
+        // document.cookie = `${"jwt=" + response.data.access}`
+        const decodedToken = jwtDecode(response.data.access);
+        localStorage.setItem('isSuperuser', decodedToken.is_superuser)
         router.push('/dashboard');
       }
     } catch (error) {

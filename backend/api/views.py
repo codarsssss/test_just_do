@@ -24,6 +24,9 @@ class NotificationView(APIView):
             notifications = Notification.objects.filter(recipient=user)
 
         serializer = NotificationSerializer(notifications, many=True)
+        print({"notifications": serializer.data,
+            "statistic": notifications.values('status').annotate(
+                count=Count('status')) if notifications else None})
 
         return Response({
             "notifications": serializer.data,
